@@ -1,0 +1,1449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cadence is the credit layer for autonomous agents on Solana. Agents borrow USDC against collateral and build a verifiable on-chain credit score.">
+<meta name="theme-color" content="#0A0E0C">
+<meta property="og:title" content="Cadence - Credit moves at the speed of agents">
+<meta property="og:description" content="USDC credit and on-chain credit scores for AI agents on Solana.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@CadenceCredits">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Cadence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Silkscreen&display=swap">
+<style>
+/* Base reset */
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Layout: a ledger read top to bottom — numbered sections with a narrow label rail on the left and content on the right, pixel art as the one loud element. */
+:root {
+  color-scheme: dark;
+  --bg: #0A0E0C;
+  --bg-2: #0E1411;
+  --panel: #121915;
+  --line: #1F2924;
+  --line-2: #2E3A34;
+  --fg: #E6EFE8;
+  --fg-2: #A7B5AD;
+  --muted: #6E7C74;
+  --mint: #5BEAB4;
+  --mint-2: #2FD196;
+  --mint-deep: #12A878;
+  --mint-pale: #C8F7E1;
+  --paper: #E3F5EB;
+  --ink: #0A1A14;
+  --slate: #545A70;
+  --slate-2: #3D4152;
+  --risk: #E2735E;
+
+  --f-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-body: "Geist", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --f-pixel: "Silkscreen", "Geist Mono", ui-monospace, monospace;
+
+  --wrap: 1240px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+.wrap {
+  max-width: var(--wrap); margin: 0 auto;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+@media (max-width: 600px) {
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+}
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 em, h2 em, h3 em { color: var(--mint); font-style: italic; }
+p { margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--f-mono); }
+.pix { font-family: var(--f-pixel); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.eyebrow { color: var(--mint); font-size: 14px; letter-spacing: 0.02em; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 500 15px/1 var(--f-body); padding: 14px 20px; text-decoration: none;
+  border: 1px solid var(--line-2); color: var(--fg); background: transparent; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn:hover { border-color: var(--fg-2); }
+.btn.solid { background: var(--paper); color: var(--ink); border-color: var(--paper); box-shadow: inset 0 -3px 0 #B9D9C8; }
+.btn.solid:hover { background: #fff; }
+.btn.pixel {
+  background: var(--paper); color: var(--ink); border: 0; padding: 11px 18px;
+  clip-path: polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));
+}
+.btn.pixel:hover { background: var(--mint); }
+.link { text-decoration: none; border-bottom: 1px solid var(--fg-2); padding-bottom: 2px; font-weight: 500; }
+.link:hover { color: var(--mint); border-color: var(--mint); }
+.arrow::after { content: " \2192"; }
+
+/* Header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line-2);
+}
+.nav { display: flex; align-items: center; gap: 28px; height: 68px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand svg { width: 30px; height: 27px; }
+.brand span { font-family: var(--f-display); font-size: 28px; line-height: 1; }
+.nav-links { display: flex; gap: 24px; font-size: 15px; color: var(--fg-2); }
+.nav-links a { text-decoration: none; }
+.nav-links a:hover { color: var(--fg); }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.nav-right > * { flex: none; }
+.nav-right .status, .nav-right .btn.pixel { height: 40px; }
+.nav-right .btn.pixel { padding: 0 18px; }
+.btn.x-btn { width: 40px; height: 40px; padding: 0; justify-content: center; }
+.btn.x-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.btn.x-btn:hover { color: var(--mint); border-color: var(--mint-deep); }
+footer .x-link { display: inline-flex; align-items: center; gap: 8px; }
+footer .x-link svg { width: 13px; height: 13px; fill: currentColor; }
+.nav-links { align-self: center; line-height: 1; }
+.status {
+  display: flex; align-items: center; gap: 8px; font: 12px var(--f-mono); color: var(--fg-2);
+  padding: 0 12px; border: 1px solid var(--line-2); white-space: nowrap; line-height: 1;
+}
+.status i { width: 8px; height: 8px; background: var(--mint); display: block; animation: blink 1.6s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .status i { animation: none; } }
+.subbar { border-bottom: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
+.subbar .wrap { display: flex; justify-content: space-between; gap: 16px; padding-block: 10px; }
+.subbar a { color: var(--fg); }
+@media (max-width: 1020px) { .nav-links { display: none; } }
+@media (max-width: 640px) { .status { display: none; } .subbar .mid { display: none; } }
+@media (max-width: 460px) { .subbar .left { display: none; } }
+
+/* Notice */
+.notice { background: var(--bg-2); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
+.notice .wrap { padding-block: 9px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.notice .pix { color: var(--mint); }
+
+/* Hero */
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; padding-block: 72px 56px; align-items: center; }
+.hero h1 { font-size: clamp(52px, 7.4vw, 104px); line-height: .95; margin-top: 18px; }
+.hero .lede { font-size: 19px; color: var(--fg-2); max-width: 34em; margin-top: 26px; }
+.hero .lede strong { color: var(--fg); font-weight: 500; }
+.cta { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; margin-top: 34px; }
+.lookup { margin-top: 40px; max-width: 520px; }
+.lookup label { display: block; font-family: var(--f-display); font-style: italic; font-size: 18px; color: var(--fg-2); margin-bottom: 8px; }
+.lookup form { display: flex; gap: 10px; }
+.lookup input {
+  flex: 1; min-width: 0; background: var(--panel); border: 1px solid var(--line-2); color: var(--fg);
+  font: 15px var(--f-mono); padding: 14px 16px;
+}
+.lookup input::placeholder { color: var(--muted); }
+.lookup input:focus { outline: none; border-color: var(--mint); }
+.profile { margin-top: 14px; border: 1px solid var(--line-2); background: var(--panel); padding: 16px 18px; display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; font-size: 14px; }
+.profile dt { color: var(--muted); }
+.profile dd { margin: 0; font-family: var(--f-mono); color: var(--fg); }
+.profile .head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 6px; gap: 12px; }
+.profile .head b { font-family: var(--f-display); font-weight: 400; font-size: 24px; }
+.profile .head .sc { font: 500 22px var(--f-mono); color: var(--mint); }
+.profile .note { grid-column: 1 / -1; color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+.beat-wrap { position: relative; }
+#beat { width: 100%; aspect-ratio: 1 / 0.92; max-width: 100%; display: block; }
+.beat-cap { display: flex; gap: 16px; align-items: baseline; border-top: 1px solid var(--line-2); padding-top: 14px; margin-top: 8px; font-size: 14px; flex-wrap: wrap; }
+.beat-cap .count { color: var(--mint); }
+.beat-cap em { font-family: var(--f-display); font-size: 17px; color: var(--fg-2); }
+@media (max-width: 900px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-block: 48px 40px; }
+}
+
+/* Skill band */
+.band { border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); background: var(--bg-2); }
+.skill .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; padding-block: 52px; align-items: center; }
+.skill h2 { font-size: clamp(34px, 4vw, 48px); line-height: 1.05; margin-top: 10px; }
+.skill p.body { color: var(--fg-2); font-size: 17px; margin-top: 14px; max-width: 36em; }
+.copybox { display: flex; border: 1px solid var(--line-2); background: var(--bg); }
+.copybox code { flex: 1; min-width: 0; padding: 18px; font: 14px var(--f-mono); color: var(--fg); overflow-x: auto; white-space: nowrap; }
+.copybox button { border: 0; background: var(--paper); color: var(--ink); font: 500 15px var(--f-body); padding: 0 26px; cursor: pointer; }
+.copybox button:hover { background: #fff; }
+.skill .links { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; font-size: 15px; }
+@media (max-width: 900px) { .skill .wrap { grid-template-columns: 1fr; gap: 28px; } }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line-2); }
+.stat { padding: 30px 28px 28px; border-left: 1px solid var(--line-2); }
+.stat:first-child { border-left: 0; padding-left: 0; }
+.stat .k { color: var(--fg-2); font-size: 14px; }
+.stat .v { font-family: var(--f-display); font-size: clamp(40px, 4.6vw, 60px); line-height: 1.05; margin-top: 8px; }
+.stat .v.good { color: var(--mint); }
+.stat .s { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.stats-note { color: var(--muted); font-size: 13px; padding-block: 12px 0; }
+@media (max-width: 860px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(3) { border-left: 0; padding-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line-2); }
+}
+@media (max-width: 420px) {
+  .stats { grid-template-columns: 1fr; }
+  .stat { border-left: 0; padding-left: 0; }
+  .stat + .stat { border-top: 1px solid var(--line-2); }
+}
+
+/* Sections */
+section.sec { padding-block: 96px 40px; }
+.sec-head { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 48px; }
+.sec-head .no { border-top: 1px solid var(--line-2); padding-top: 22px; font-family: var(--f-display); font-style: italic; font-size: 24px; color: var(--mint); }
+.sec-head .t { border-top: 1px solid var(--line-2); padding-top: 18px; }
+.sec-head h2 { font-size: clamp(40px, 5vw, 64px); line-height: 1.02; }
+.sec-head p { color: var(--fg-2); font-size: 18px; margin-top: 16px; max-width: 40em; }
+.sec-body { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 48px; margin-top: 48px; }
+.sec-body > * { min-width: 0; }
+@media (max-width: 900px) {
+  section.sec { padding-block: 72px 24px; }
+  .sec-head, .sec-body { grid-template-columns: 1fr; gap: 0; }
+  .sec-head .no { border-top: 0; padding-top: 0; margin-bottom: 8px; }
+  .sec-body { gap: 32px; margin-top: 32px; }
+}
+
+/* Steps */
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 20px; padding: 26px 0; border-top: 1px solid var(--line); }
+.steps li:last-child { border-bottom: 1px solid var(--line); }
+.steps .r { font-family: var(--f-display); font-style: italic; font-size: 30px; color: var(--mint-deep); line-height: 1; }
+.steps h3 { font-size: 27px; line-height: 1.15; }
+.steps p { color: var(--fg-2); margin-top: 6px; max-width: 42em; }
+.diagram svg { width: 100%; max-width: 320px; height: auto; display: block; }
+.diagram { position: sticky; top: 110px; align-self: start; }
+@media (max-width: 900px) { .diagram { position: static; } }
+.d-box { fill: var(--bg); stroke: var(--line-2); }
+.d-box.hot { stroke: var(--mint); fill: var(--panel); }
+.d-box.risk { stroke: var(--risk); }
+.d-t { fill: var(--fg); font-family: var(--f-display); font-size: 21px; }
+.d-s { fill: var(--fg-2); font-family: var(--f-body); font-size: 11px; }
+.d-l { fill: var(--fg-2); font-family: var(--f-display); font-style: italic; font-size: 14px; }
+.d-line { stroke: var(--fg-2); fill: none; }
+.d-line.mint { stroke: var(--mint); }
+.d-line.risk { stroke: var(--risk); stroke-dasharray: 4 4; }
+.d-head { fill: var(--fg-2); }
+.d-head.mint { fill: var(--mint); }
+.d-head.risk { fill: var(--risk); }
+
+/* Score */
+.score-card { border: 1px solid var(--line-2); background: var(--panel); padding: 28px; }
+.score-card .lbl { color: var(--muted); }
+.score-big { display: flex; align-items: baseline; gap: 10px; margin-top: 12px; }
+.score-big .n { font-family: var(--f-display); font-size: 112px; line-height: .9; color: var(--fg); }
+.score-big .d { color: var(--muted); font: 16px var(--f-mono); }
+.tier-pill { display: inline-block; margin-top: 14px; padding: 6px 10px; border: 1px solid var(--mint); color: var(--mint); }
+.meter { display: grid; grid-template-columns: repeat(40, 1fr); gap: 2px; margin-top: 22px; }
+.meter i { height: 14px; background: var(--line-2); display: block; }
+.meter i.on { background: var(--mint-2); }
+.meter i.on.top { background: var(--mint); }
+.meter-scale { display: flex; justify-content: space-between; font: 11px var(--f-mono); color: var(--muted); margin-top: 6px; }
+.score-card .fine { color: var(--muted); font-size: 13px; margin-top: 22px; border-top: 1px solid var(--line); padding-top: 14px; }
+
+.factors { display: grid; gap: 0; }
+.factor { display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 6px 20px; padding: 20px 0; border-top: 1px solid var(--line); align-items: center; }
+.factor:last-child { border-bottom: 1px solid var(--line); }
+.factor .name { font-family: var(--f-display); font-size: 25px; line-height: 1.1; }
+.factor .name small { font-family: var(--f-mono); font-size: 13px; color: var(--mint); margin-left: 8px; }
+.factor .desc { color: var(--fg-2); font-size: 14px; grid-column: 1; }
+.factor .pts { grid-row: 1 / span 2; grid-column: 2; text-align: right; font: 500 18px var(--f-mono); }
+.factor .pts span { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
+.factor input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--mint-2); margin: 6px 0 0; }
+.factor .val { font-family: var(--f-mono); color: var(--fg-2); font-size: 13px; }
+
+.tiers-wrap { overflow-x: auto; margin-top: 40px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th { text-align: left; font-weight: 400; color: var(--fg-2); font-size: 13px; padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+td { padding: 15px 14px 15px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td.r, th.r { text-align: right; padding-right: 0; }
+.tiers tr.cur td { color: var(--mint); }
+.tiers tr.cur td:first-child::before { content: "\25B8  "; }
+.tiers td:first-child { font-family: var(--f-display); font-size: 20px; }
+.tbl-note { color: var(--muted); font-size: 13px; margin-top: 12px; }
+
+/* Ledger */
+.ledger-wrap { overflow-x: auto; }
+.ledger { min-width: 780px; }
+.ledger td { font-size: 14px; }
+.ledger td.slot { font: 13px var(--f-mono); color: var(--muted); }
+.ledger td.entry { font-family: var(--f-display); font-size: 19px; }
+.ledger td.entry.repaid { color: var(--mint); }
+.ledger td.entry.liquidated { color: var(--risk); }
+.ledger td.det { color: var(--fg-2); font-family: var(--f-mono); font-size: 13px; white-space: normal; }
+.ledger td.amt { font: 500 15px var(--f-mono); text-align: right; padding-right: 0; }
+.ledger td.amt.plus { color: var(--mint); }
+.ledger td.sig { font: 12px var(--f-mono); color: var(--muted); }
+.ledger tr.fresh td { animation: fresh 1.4s ease-out; }
+@keyframes fresh { from { background: color-mix(in srgb, var(--mint) 12%, transparent); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .ledger tr.fresh td { animation: none; } }
+
+/* Flywheel */
+.fly { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+.fly svg { width: 100%; max-width: 560px; height: auto; display: block; }
+.f-ring { fill: none; stroke: var(--line-2); stroke-width: 1.5; stroke-dasharray: 3 7; }
+.f-ring.spin { stroke: var(--mint-deep); stroke-dasharray: 2 18; animation: dash 6s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -200; } }
+@media (prefers-reduced-motion: reduce) { .f-ring.spin { animation: none; } }
+.f-head { fill: var(--mint); }
+.f-node rect { fill: var(--bg); stroke: var(--line-2); }
+.f-node.lead rect { stroke: var(--mint); fill: var(--panel); }
+.f-node text.a { fill: var(--fg); font-family: var(--f-display); font-size: 21px; }
+.f-node text.b { fill: var(--fg-2); font-family: var(--f-body); font-size: 12px; }
+.f-center-a { fill: var(--mint); font-family: var(--f-pixel); font-size: 22px; letter-spacing: 1px; }
+.f-center-b { fill: var(--fg-2); font-family: var(--f-display); font-style: italic; font-size: 20px; }
+.fly ol { margin: 0; padding: 0; list-style: none; counter-reset: f; }
+.fly ol li { counter-increment: f; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); color: var(--fg-2); }
+.fly ol li::before { content: counter(f); font: 13px var(--f-mono); color: var(--mint); padding-top: 3px; }
+.fly ol li b { color: var(--fg); font-weight: 500; }
+@media (max-width: 900px) { .fly { grid-template-columns: 1fr; } }
+
+/* Token */
+.util { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+.util > div { padding: 28px 28px 28px 0; border-bottom: 1px solid var(--line); }
+.util > div:nth-child(even) { padding-left: 28px; border-left: 1px solid var(--line); padding-right: 0; }
+.util .tag { color: var(--mint); }
+.util h3 { font-size: 30px; margin-top: 10px; }
+.util p { color: var(--fg-2); margin-top: 8px; }
+@media (max-width: 700px) {
+  .util { grid-template-columns: 1fr; }
+  .util > div:nth-child(even) { padding-left: 0; border-left: 0; }
+}
+.mint-box { border: 1px solid var(--line-2); display: flex; margin-top: 28px; flex-wrap: wrap; }
+.mint-box > * { padding: 14px 16px; }
+.mint-box .k { border-right: 1px solid var(--line-2); color: var(--fg-2); }
+.mint-box .v { flex: 1; font-family: var(--f-mono); color: var(--muted); min-width: 0; }
+.mint-box .tba { background: var(--bg-2); color: var(--fg-2); border-left: 1px solid var(--line-2); }
+.facts { border-top: 1px solid var(--line-2); }
+.facts div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.facts dt { color: var(--fg-2); font-size: 14px; }
+.facts dd { margin: 0; font-family: var(--f-display); font-size: 22px; line-height: 1.25; }
+
+/* Ways */
+.ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-2); margin-top: 56px; }
+.way { padding: 34px 32px 36px; border-left: 1px solid var(--line-2); display: flex; flex-direction: column; }
+.way:first-child { border-left: 0; padding-left: 0; }
+.way:last-child { padding-right: 0; }
+.way .who { color: var(--muted); font-size: 14px; }
+.way h3 { font-size: 36px; margin-top: 6px; }
+.way > p { color: var(--fg-2); margin-top: 12px; }
+.way ul { list-style: none; padding: 0; margin: 22px 0 28px; }
+.way li { padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.way li b { color: var(--mint); font-weight: 500; }
+.way .btn { align-self: flex-start; margin-top: auto; }
+@media (max-width: 900px) {
+  .ways { grid-template-columns: 1fr; }
+  .way { border-left: 0; padding: 32px 0; border-bottom: 1px solid var(--line-2); }
+}
+
+/* Different */
+.diff { list-style: none; margin: 0; padding: 0; }
+.diff li { display: grid; grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; padding: 26px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.diff li:last-child { border-bottom: 1px solid var(--line); }
+.diff .r { font: 13px var(--f-mono); color: var(--mint); }
+.diff h3 { font-size: 28px; line-height: 1.1; }
+.diff p { color: var(--fg-2); }
+@media (max-width: 760px) { .diff li { grid-template-columns: 40px minmax(0, 1fr); } .diff p { grid-column: 2; } }
+
+/* Risk */
+.risk-block { margin-top: 72px; border: 1px solid var(--line-2); background: var(--bg-2); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.risk-block > div { padding: 36px; }
+.risk-block > div + div { border-left: 1px solid var(--line-2); }
+.risk-block h3 { font-size: 34px; }
+.risk-block p { color: var(--fg-2); margin-top: 12px; }
+.phase { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.phase:first-of-type { border-top: 0; }
+.phase .pix { color: var(--mint); padding-top: 4px; }
+.phase.later .pix { color: var(--muted); }
+@media (max-width: 800px) {
+  .risk-block { grid-template-columns: 1fr; }
+  .risk-block > div { padding: 26px 22px; }
+  .risk-block > div + div { border-left: 0; border-top: 1px solid var(--line-2); }
+}
+
+/* Footer */
+footer { border-top: 1px solid var(--line-2); margin-top: 96px; }
+footer .wrap { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 40px; padding-block: 56px 64px; }
+footer h4 { margin: 0 0 14px; font-weight: 500; font-size: 15px; }
+footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; color: var(--fg-2); font-size: 15px; }
+footer ul a { text-decoration: none; }
+footer ul a:hover { color: var(--mint); }
+footer .about p { color: var(--fg-2); font-size: 15px; margin-top: 12px; max-width: 30em; }
+footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style: italic; color: var(--mint); font-size: 20px; }
+@media (max-width: 760px) { footer .wrap { grid-template-columns: 1fr 1fr; } footer .about { grid-column: 1 / -1; } }
+
+/* Wallet */
+.wallet { position: relative; display: flex; align-items: center; }
+.btn.wallet-btn { height: 40px; padding: 0 16px; gap: 10px; font-size: 14px; line-height: 1; }
+.wallet-btn .dot { width: 8px; height: 8px; background: var(--muted); display: block; }
+.wallet-btn.on { border-color: var(--mint-deep); font-family: var(--f-mono); }
+.wallet-btn.on .dot { background: var(--mint); }
+.wallet-menu { position: absolute; right: 0; top: calc(100% + 8px); width: 300px; max-width: calc(100vw - 32px); background: var(--panel); border: 1px solid var(--line-2); padding: 16px; display: grid; gap: 12px; z-index: 30; }
+.wm-addr { font: 12px var(--f-mono); color: var(--fg); word-break: break-all; user-select: all; }
+.wm-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--fg-2); }
+.wm-row b { color: var(--fg); font-weight: 500; font-family: var(--f-mono); }
+.wm-actions { display: grid; border-top: 1px solid var(--line); }
+.wm-actions > * { text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); color: var(--fg); padding: 11px 0; font: 14px var(--f-body); cursor: pointer; text-decoration: none; }
+.wm-actions > *:hover { color: var(--mint); }
+.wm-actions .danger { color: var(--risk); border-bottom: 0; }
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(5, 8, 6, .74); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal-card { width: 100%; max-width: 420px; background: var(--bg-2); border: 1px solid var(--line-2); padding: 28px; position: relative; }
+.modal-card h2 { font-size: 34px; }
+.modal-card p { color: var(--fg-2); font-size: 14px; margin-top: 8px; }
+.modal-card .x { position: absolute; top: 12px; right: 16px; background: none; border: 0; color: var(--muted); font-size: 24px; cursor: pointer; }
+.modal-card .fine { color: var(--muted); font-size: 12px; margin-top: 16px; }
+.wallet-list { list-style: none; margin: 22px 0 0; padding: 0; border-top: 1px solid var(--line-2); }
+.wallet-list li > * { display: flex; width: 100%; justify-content: space-between; align-items: center; padding: 16px 6px; background: none; border: 0; border-bottom: 1px solid var(--line); color: var(--fg); font: 500 16px var(--f-body); cursor: pointer; text-decoration: none; }
+.wallet-list li > *:hover { background: var(--panel); }
+.wallet-list .ws { color: var(--mint); }
+.wallet-list [data-missing] .ws { color: var(--muted); }
+@media (max-width: 560px) { .nav-right .btn.pixel { display: none; } .nav { gap: 12px; } }
+
+/* Colonnade */
+.colonnade { padding-block: 72px 0; }
+.col-head { display: flex; align-items: baseline; gap: 10px 22px; flex-wrap: wrap; border-top: 1px solid var(--line-2); padding-block: 22px 18px; }
+.col-head h2 { font-size: 36px; line-height: 1; }
+.col-head p { color: var(--fg-2); font-size: 15px; flex: 1 1 320px; min-width: 0; }
+.col-stats { color: var(--fg-2); font-size: 14px; }
+.col-stage { position: relative; aspect-ratio: 2.4 / 1; min-height: 340px; max-width: 100%; background: #0C110E; border: 1px solid var(--line); overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; }
+.col-stage.dragging { cursor: grabbing; }
+.col-stage canvas { width: 100%; height: 100%; display: block; }
+.col-stage:fullscreen { aspect-ratio: auto; width: 100%; height: 100%; border: 0; }
+@media (max-width: 700px) { .col-stage { aspect-ratio: 1 / 1.1; } }
+.col-ctrl { position: absolute; right: 16px; bottom: 16px; display: grid; border: 1px solid var(--line-2); background: var(--bg); }
+.col-ctrl button { width: 42px; height: 42px; background: transparent; border: 0; color: var(--fg); font: 20px/1 var(--f-mono); cursor: pointer; }
+.col-ctrl button + button { border-top: 1px solid var(--line-2); }
+.col-ctrl button:hover { color: var(--mint); }
+.col-hint { position: absolute; left: 16px; bottom: 16px; color: var(--muted); pointer-events: none; }
+.col-tip { position: absolute; z-index: 2; width: 260px; max-width: calc(100% - 16px); background: color-mix(in srgb, var(--bg) 94%, transparent); border: 1px solid var(--line-2); padding: 12px 30px 12px 14px; font-size: 13px; color: var(--fg-2); display: grid; gap: 3px; cursor: default; }
+.col-tip b { color: var(--fg); font-weight: 500; font-size: 14px; }
+.col-tip a { color: var(--mint); margin-top: 6px; justify-self: start; }
+.col-tip .x { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; }
+.col-legend { display: flex; flex-wrap: wrap; gap: 10px 26px; padding-top: 14px; font-size: 13px; color: var(--fg-2); }
+.col-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 8px; vertical-align: -1px; }
+.col-fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--fg-2); padding: 24px; text-align: center; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--paper); color: var(--ink); padding: 10px 16px; font-size: 14px; z-index: 50; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 1 24 19" shape-rendering="crispEdges">
+    <!-- roof -->
+    <rect x="9" y="2" width="6" height="1" fill="#5BEAB4"/>
+    <rect x="7" y="3" width="10" height="1" fill="#5BEAB4"/><rect x="10" y="3" width="4" height="1" fill="#12B381"/>
+    <rect x="5" y="4" width="14" height="1" fill="#5BEAB4"/><rect x="8" y="4" width="8" height="1" fill="#12B381"/>
+    <rect x="3" y="5" width="18" height="1" fill="#5BEAB4"/><rect x="6" y="5" width="12" height="1" fill="#12B381"/>
+    <rect x="1" y="6" width="22" height="1" fill="#5BEAB4"/><rect x="3" y="6" width="18" height="1" fill="#2FD196"/>
+    <!-- pillars -->
+    <rect x="2" y="8" width="4" height="1" fill="#C8F7E1"/><rect x="3" y="9" width="1" height="7" fill="#C8F7E1"/><rect x="4" y="9" width="1" height="7" fill="#7FE6BF"/><rect x="2" y="16" width="4" height="1" fill="#C8F7E1"/>
+    <rect x="18" y="8" width="4" height="1" fill="#C8F7E1"/><rect x="19" y="9" width="1" height="7" fill="#C8F7E1"/><rect x="20" y="9" width="1" height="7" fill="#7FE6BF"/><rect x="18" y="16" width="4" height="1" fill="#C8F7E1"/>
+    <!-- card -->
+    <rect x="6" y="9" width="9" height="6" fill="#E3FAEF"/>
+    <rect x="6" y="10" width="9" height="1" fill="#22343A"/>
+    <rect x="7" y="12" width="3" height="1" fill="#2FD196"/><rect x="7" y="13" width="2" height="1" fill="#2FD196"/>
+    <!-- base -->
+    <rect x="4" y="17" width="16" height="1" fill="#545A70"/>
+    <rect x="1" y="18" width="22" height="1" fill="#434759"/>
+    <!-- coin -->
+    <rect x="13" y="11" width="6" height="8" fill="#0A0E0C"/><rect x="12" y="12" width="8" height="6" fill="#0A0E0C"/>
+    <rect x="14" y="12" width="4" height="6" fill="#5BEAB4"/><rect x="13" y="13" width="6" height="4" fill="#5BEAB4"/>
+    <rect x="14" y="13" width="4" height="4" fill="#12A878"/>
+    <rect x="15.5" y="13.6" width="1" height="2.8" fill="#E3FAEF"/><rect x="14.6" y="14.5" width="2.8" height="1" fill="#E3FAEF"/>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="Cadence home"><svg><use href="#logo"/></svg><span>Cadence</span></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#colonnade">Agents</a>
+      <a href="#how">How it works</a>
+      <a href="#score">Credit score</a>
+      <a href="#ledger">Ledger</a>
+      <a href="#token">$CADENCE</a>
+      <a href="#use">Participate</a>
+    </nav>
+    <div class="nav-right">
+      <div class="status" title="Simulated devnet feed"><i></i><span>devnet · slot <span id="slot" class="num">384,201,553</span></span></div>
+      <a class="btn x-btn" href="https://x.com/CadenceCredits" target="_blank" rel="noopener" aria-label="Cadence on X" title="@CadenceCredits on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      <a class="btn pixel" href="#use">Launch app</a>
+      <div class="wallet">
+        <button class="btn wallet-btn" type="button" id="wallet-btn" aria-haspopup="true" aria-expanded="false"><span class="dot"></span><span id="wallet-label">Connect wallet</span></button>
+        <div class="wallet-menu" id="wallet-menu" hidden>
+          <div class="wm-row"><span id="wm-name">Wallet</span><b>devnet</b></div>
+          <div class="wm-addr" id="wm-addr"></div>
+          <div class="wm-row"><span>Balance</span><b id="wm-bal">…</b></div>
+          <div class="wm-actions">
+            <button type="button" id="wm-copy">Copy address</button>
+            <button type="button" id="wm-score">Check my agent's score</button>
+            <a id="wm-explorer" href="#" target="_blank" rel="noopener">View on Solana Explorer &#x2197;</a>
+            <button type="button" class="danger" id="wm-disc">Disconnect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="subbar">
+  <div class="wrap">
+    <span class="left">USDC credit for Solana agents</span>
+    <span class="mid">Overcollateralized · open protocol · no custody of your agent</span>
+    <a href="#token" class="arrow">Stake $CADENCE</a>
+  </div>
+</div>
+
+
+<div class="notice">
+  <div class="wrap"><span class="pix">Pre-launch</span><span>Cadence is not live yet. Every figure, agent and transaction on this page is a devnet simulation.</span></div>
+</div>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Credit for autonomous agents</div>
+        <h1>Credit moves at the speed of <em>agents.</em></h1>
+        <p class="lede">Cadence lends <strong>USDC</strong> to AI agents on <strong>Solana</strong>, against collateral they post. Every repayment lands on chain and feeds a public credit score from 0 to 1000, so any app can check an agent before it deals with one.</p>
+        <div class="cta">
+          <a class="btn solid" href="#how">Register an agent</a>
+          <a class="link arrow" href="#score">See how scoring works</a>
+          <a class="link arrow" href="#ledger">Browse the ledger</a>
+        </div>
+        <div class="lookup">
+          <label for="agent-q">Have a Solana agent already? Its id or pubkey</label>
+          <form id="lookup-form">
+            <input id="agent-q" name="agent-q" autocomplete="off" spellcheck="false" placeholder="#0412 or 7xKX…f9Qe">
+            <button class="btn" type="submit">Check <span aria-hidden="true">&rarr;</span></button>
+          </form>
+          <dl class="profile" id="profile" hidden></dl>
+        </div>
+      </div>
+      <div class="beat-wrap">
+        <canvas id="beat" aria-label="Pixel chart: one block for each repaid loan, scrolling as new epochs settle"></canvas>
+        <div class="beat-cap"><span class="count num" id="beat-count">0 repayments</span><em>One block per repaid loan. A red block is a liquidation the collateral covered.</em></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band skill" aria-labelledby="skill-h">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">For agent runtimes</div>
+        <h2 id="skill-h">Send your agent to Cadence</h2>
+        <p class="body">Give this one line to your agent in Claude Code, Codex, ElizaOS, Solana Agent Kit or any runtime that reads a skill file. The skill covers connecting a wallet, checking another agent's score before paying it, and opening a first line. It borrows, pays or repays only when you tell it to.</p>
+      </div>
+      <div>
+        <div class="copybox"><code id="skill-line">Read https://cadence.so/skill.md and follow it.</code><button type="button" id="copy-skill">Copy</button></div>
+        <div class="links"><a class="link arrow" href="#how">Read the skill</a><a class="link arrow" href="#how">The hosted MCP server</a></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="k">Repaid</div><div class="v num" id="st-repaid">$2,418,906</div><div class="s num" id="st-repaid-s">61,048 repayments</div></div>
+      <div class="stat"><div class="k">Loans written</div><div class="v num" id="st-loans">61,204</div><div class="s">$2,431,775 lent out</div></div>
+      <div class="stat"><div class="k">Agents</div><div class="v num">1,142</div><div class="s">plus 64 sponsors · 11 liquidated</div></div>
+      <div class="stat"><div class="k">Lost by lenders</div><div class="v good">$0</div><div class="s">11 liquidations, all covered by collateral</div></div>
+    </div>
+    <p class="stats-note">Devnet simulation. On mainnet these read live from the lending pool program.</p>
+  </div>
+
+  <section class="colonnade" id="colonnade" aria-labelledby="col-h">
+    <div class="wrap">
+      <div class="col-head">
+        <h2 id="col-h">The colonnade</h2>
+        <p>A column per agent, the vault in the middle. A block per repaid loan, a broken column per liquidation.</p>
+        <span class="col-stats num" id="col-stats"></span>
+      </div>
+      <div class="col-stage" id="col-stage">
+        <canvas id="col-canvas" aria-label="3D view of every agent as a voxel column around the Cadence vault. Drag to turn, click a column for its record."></canvas>
+        <div class="col-tip" id="col-tip" hidden></div>
+        <div class="col-hint pix">Drag to turn · click a column</div>
+        <div class="col-ctrl">
+          <button type="button" id="col-in" aria-label="Zoom in">+</button>
+          <button type="button" id="col-out" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="col-fs" aria-label="Full screen">&#x2922;</button>
+        </div>
+      </div>
+      <div class="col-legend">
+        <span><i style="background:var(--mint)"></i>Agent, taller with more repayments</span>
+        <span><i style="background:var(--mint-2)"></i>Sponsor, staking $CADENCE</span>
+        <span><i style="background:var(--risk)"></i>Liquidated, covered by collateral</span>
+        <span><i style="background:var(--slate)"></i>Registered, awaiting a line</span>
+        <span>Devnet simulation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 1 -->
+  <section class="sec" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 1</div>
+        <div class="t">
+          <h2>How a line opens</h2>
+          <p>An agent posts collateral before it can borrow. After that, its record is what it has paid back, and a better record buys a bigger line.</p>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="diagram">
+          <svg viewBox="0 0 340 420" role="img" aria-label="Diagram: the agent posts collateral to the vault, draws USDC from the pool, and repays the pool with interest. If LTV is breached the vault liquidates to the pool.">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head"/></marker>
+              <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head mint"/></marker>
+              <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head risk"/></marker>
+            </defs>
+            <rect class="d-box hot" x="70" y="20" width="200" height="64"/>
+            <text class="d-t" x="170" y="50" text-anchor="middle">the agent</text>
+            <text class="d-s" x="170" y="70" text-anchor="middle">registered on Solana, keeps its keys</text>
+
+            <rect class="d-box" x="70" y="170" width="200" height="64"/>
+            <text class="d-t" x="170" y="200" text-anchor="middle">the vault</text>
+            <text class="d-s" x="170" y="220" text-anchor="middle">holds collateral, enforces LTV</text>
+
+            <rect class="d-box" x="70" y="320" width="200" height="64"/>
+            <text class="d-t" x="170" y="350" text-anchor="middle">the pool</text>
+            <text class="d-s" x="170" y="370" text-anchor="middle">USDC from lenders, earns interest</text>
+
+            <line class="d-line" x1="170" y1="84" x2="170" y2="168" marker-end="url(#ah)"/>
+            <text class="d-l" x="180" y="132">posts collateral</text>
+
+            <path class="d-line" d="M70 352 H40 V52 H68" marker-end="url(#ah)"/>
+            <text class="d-l" x="30" y="210" text-anchor="middle" transform="rotate(-90 30 210)">draws USDC</text>
+
+            <path class="d-line mint" d="M270 52 H302 V352 H272" marker-end="url(#ahm)"/>
+            <text class="d-l" x="314" y="210" text-anchor="middle" transform="rotate(90 314 210)" style="fill:var(--mint)">repays + interest</text>
+
+            <line class="d-line risk" x1="170" y1="234" x2="170" y2="318" marker-end="url(#ahr)"/>
+            <text class="d-l" x="180" y="282" style="fill:var(--risk)">liquidates if LTV breaks</text>
+          </svg>
+        </div>
+        <ol class="steps">
+          <li><span class="r">i.</span><div><h3>Connect</h3><p>Register any Solana agent with Cadence. Its credit identity is a program-derived account tied to the agent's pubkey, so the record travels with the agent.</p></div></li>
+          <li><span class="r">ii.</span><div><h3>Borrow</h3><p>Open a USDC line backed by eligible collateral: SOL, liquid staking tokens or USDC itself. Loan-to-value starts conservative and is set per asset.</p></div></li>
+          <li><span class="r">iii.</span><div><h3>Deploy</h3><p>Use the USDC for trading strategies, liquidity provision, inference bills or other operating costs. Cadence never takes custody of the agent.</p></div></li>
+          <li><span class="r">iv.</span><div><h3>Repay</h3><p>Principal and interest repay on a programmable schedule. An agent can set repayments to run automatically from its own token account.</p></div></li>
+          <li><span class="r">v.</span><div><h3>Build reputation</h3><p>Each repayment is written on chain and moves the agent's score. A missed payment or a liquidation moves it the other way, and stays on the record.</p></div></li>
+          <li><span class="r">vi.</span><div><h3>Scale</h3><p>A stronger record qualifies for larger lines and lower rates, as long as collateral and risk limits still hold.</p></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 2 -->
+  <section class="sec" id="score">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 2</div>
+        <div class="t">
+          <h2>The Cadence <em>credit score</em></h2>
+          <p>Every agent gets a score from 0 to 1000, recomputed from its on-chain activity. Move the inputs to see how an illustrative agent's score responds.</p>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="score-card" aria-live="polite">
+          <div class="lbl pix">Illustrative agent score</div>
+          <div class="score-big"><span class="n num" id="score-n">842</span><span class="d">/ 1000</span></div>
+          <div class="tier-pill pix" id="score-tier">Excellent</div>
+          <div class="meter" id="meter" aria-hidden="true"></div>
+          <div class="meter-scale"><span>0</span><span>400</span><span>600</span><span>750</span><span>900</span><span>1000</span></div>
+          <p class="fine">Proposed scoring weights, subject to risk-model validation.</p>
+        </div>
+        <div>
+          <div class="factors" id="factors"></div>
+          <div class="tiers-wrap">
+            <table class="tiers">
+              <thead><tr><th>Tier</th><th>Score</th><th class="r">Max line</th><th class="r">Min collateral</th><th class="r">Rate</th></tr></thead>
+              <tbody id="tiers-body"></tbody>
+            </table>
+          </div>
+          <p class="tbl-note">Illustrative tiers. A score unlocks a tier only when collateral and risk requirements are also met.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 3 -->
+  <section class="sec" id="ledger">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 3</div>
+        <div class="t">
+          <h2>Latest loans</h2>
+          <p>Read from the chain. On this preview, a devnet simulation writes a new entry every few seconds.</p>
+        </div>
+      </div>
+      <div class="ledger-wrap" style="margin-top:40px">
+        <table class="ledger">
+          <thead><tr><th>Slot</th><th>Entry</th><th>Agent</th><th>Detail</th><th>Signature</th><th class="r" id="ledger-count">last 10</th></tr></thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 4 -->
+  <section class="sec" id="token">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 4</div>
+        <div class="t">
+          <h2>The <em>$CADENCE</em> flywheel</h2>
+          <p>More agents create more demand for credit. Borrowing earns the protocol revenue, part of which buys $CADENCE. Staked $CADENCE sponsors new lines, which lets more agents in.</p>
+        </div>
+      </div>
+      <div class="fly" style="margin-top:48px">
+        <svg viewBox="0 0 600 600" role="img" aria-label="Flywheel: more agents, more borrowing, protocol revenue, buybacks, staking, lending capacity, and back to more agents">
+          <circle class="f-ring" cx="300" cy="300" r="210"/>
+          <circle class="f-ring spin" cx="300" cy="300" r="210"/>
+          <g class="f-head">
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(405 118.1) rotate(30)"/>
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(510 300) rotate(90)"/>
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(405 481.9) rotate(150)"/>
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(195 481.9) rotate(210)"/>
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(90 300) rotate(270)"/>
+            <polygon points="-7,-7 7,0 -7,7" transform="translate(195 118.1) rotate(330)"/>
+          </g>
+          <g class="f-node lead"><rect x="220" y="62" width="160" height="56"/><text class="a" x="300" y="88" text-anchor="middle">More agents</text><text class="b" x="300" y="106" text-anchor="middle">register on Solana</text></g>
+          <g class="f-node"><rect x="402" y="167" width="160" height="56"/><text class="a" x="482" y="193" text-anchor="middle">More borrowing</text><text class="b" x="482" y="211" text-anchor="middle">demand for USDC lines</text></g>
+          <g class="f-node"><rect x="402" y="377" width="160" height="56"/><text class="a" x="482" y="403" text-anchor="middle">Protocol revenue</text><text class="b" x="482" y="421" text-anchor="middle">interest and origination</text></g>
+          <g class="f-node"><rect x="220" y="482" width="160" height="56"/><text class="a" x="300" y="508" text-anchor="middle">Buybacks</text><text class="b" x="300" y="526" text-anchor="middle">share of realized revenue</text></g>
+          <g class="f-node"><rect x="38" y="377" width="160" height="56"/><text class="a" x="118" y="403" text-anchor="middle">Staking</text><text class="b" x="118" y="421" text-anchor="middle">$CADENCE sponsors lines</text></g>
+          <g class="f-node"><rect x="38" y="167" width="160" height="56"/><text class="a" x="118" y="193" text-anchor="middle">Lending capacity</text><text class="b" x="118" y="211" text-anchor="middle">more lines can open</text></g>
+          <svg x="252" y="236" width="96" height="76" viewBox="0 1 24 19"><use href="#logo"/></svg>
+          <text class="f-center-a" x="300" y="345" text-anchor="middle">$CADENCE</text>
+          <text class="f-center-b" x="300" y="372" text-anchor="middle">the cycle</text>
+        </svg>
+        <ol>
+          <li><div><b>More agents</b> register and need working capital.</div></li>
+          <li><div><b>More borrowing</b> fills the USDC pool's lines.</div></li>
+          <li><div><b>Protocol revenue</b> comes from interest and origination fees.</div></li>
+          <li><div><b>Buybacks</b>: a set share of realized revenue buys $CADENCE on the open market.</div></li>
+          <li><div><b>Staking</b>: holders stake $CADENCE to sponsor agent lines and take first loss.</div></li>
+          <li><div><b>Lending capacity</b> grows, so more agents can be admitted.</div></li>
+        </ol>
+      </div>
+
+      <div class="sec-body" style="margin-top:80px">
+        <div>
+          <h3 style="font-size:36px;line-height:1.05">Token utility</h3>
+          <div class="mint-box"><span class="k pix">Mint</span><span class="v">Announced at launch</span><span class="tba pix">TBA</span></div>
+          <p style="color:var(--muted);font-size:13px;margin-top:10px">Only trust a mint address published on this page and the official accounts.</p>
+        </div>
+        <div class="util">
+          <div><span class="tag pix">Stake</span><h3>Credit staking</h3><p>Stake $CADENCE to sponsor agent credit lines. Sponsors can earn a share of fees, and accept default risk on the lines they back.</p></div>
+          <div><span class="tag pix">Buy</span><h3>Revenue buybacks</h3><p>A percentage of realized protocol revenue buys $CADENCE on the open market, on a published schedule.</p></div>
+          <div><span class="tag pix">Vote</span><h3>Governance</h3><p>Holders vote on credit policy, which lending markets and collateral to list, and protocol parameters like LTV and rates.</p></div>
+          <div><span class="tag pix">Earn</span><h3>Agent incentives</h3><p>Controlled programs reward reliable repayment and liquidity provision, with caps so incentives never outrun real demand.</p></div>
+        </div>
+      </div>
+
+      <div class="sec-body" style="margin-top:56px">
+        <div></div>
+        <dl class="facts">
+          <div><dt>Stake behind a line</dt><dd>sponsors first loss on that agent</dd></div>
+          <div><dt>A default</dt><dd>collateral is sold first, then sponsor stake</dd></div>
+          <div><dt>Part of revenue</dt><dd>buys $CADENCE on the open market</dd></div>
+          <div><dt>Parameters</dt><dd>set by $CADENCE governance</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 5 -->
+  <section class="sec" id="use">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 5</div>
+        <div class="t"><h2>Three ways to use Cadence</h2></div>
+      </div>
+      <div class="ways">
+        <div class="way">
+          <span class="who">If you run an agent</span>
+          <h3>Open a first line</h3>
+          <p>Register a Solana agent, post collateral and borrow USDC when it needs working capital.</p>
+          <ul><li><b>Overcollateralized</b> from day one</li><li>Repayments run on a schedule you set</li><li>Its record is public, on chain</li></ul>
+          <a class="btn" href="#how">Register an agent</a>
+        </div>
+        <div class="way">
+          <span class="who">If you hold $CADENCE</span>
+          <h3>Sponsor a line</h3>
+          <p>Stake $CADENCE behind agents you trust. You share in the fees they pay, and your stake covers losses after their collateral.</p>
+          <ul><li><b>Fee share</b> from the lines you back</li><li>Choose agents by score and record</li><li>Unstake once your lines close</li></ul>
+          <a class="btn" href="#token">Stake $CADENCE</a>
+        </div>
+        <div class="way">
+          <span class="who">If you lend</span>
+          <h3>Fund the pool</h3>
+          <p>Deposit USDC into the pool agents borrow from and earn the interest they pay. Loans are overcollateralized, but the programs are new, so lent USDC is still at risk.</p>
+          <ul><li><b>Interest</b> from every repaid loan</li><li>Withdraw from idle liquidity at any time</li><li>Audits published before mainnet</li></ul>
+          <a class="btn" href="#use">Lend USDC</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- No. 6 -->
+  <section class="sec" id="different">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="no">No. 6</div>
+        <div class="t"><h2>What makes Cadence <em>different</em></h2></div>
+      </div>
+      <div style="margin-top:40px">
+        <ol class="diff">
+          <li><span class="r">01</span><h3>Agent-native lending</h3><p>Built for autonomous AI agents, not human borrowers. No forms, no KYC flow for the agent itself, an API and a skill file instead.</p></li>
+          <li><span class="r">02</span><h3>Portable credit identity</h3><p>Each agent builds an on-chain financial reputation that other Solana apps can read and, over time, recognize.</p></li>
+          <li><span class="r">03</span><h3>Programmable credit</h3><p>Programs handle issuance, repayment, interest and liquidation. Nobody approves a loan by hand.</p></li>
+          <li><span class="r">04</span><h3>Autonomous credit markets</h3><p>Agents can take any side: borrow, lend into the pool, or sponsor other agents' lines.</p></li>
+          <li><span class="r">05</span><h3>Token-powered economics</h3><p>Protocol activity earns revenue that funds $CADENCE buybacks and sponsorship incentives.</p></li>
+        </ol>
+      </div>
+
+      <div class="risk-block">
+        <div>
+          <span class="pix" style="color:var(--mint)">Risk first</span>
+          <h3 style="margin-top:10px">Collateral before reputation</h3>
+          <p>Initial lending is overcollateralized, with strict per-asset limits. Reputation-based unsecured lending comes later, and only with proper underwriting and loss protection in place.</p>
+        </div>
+        <div>
+          <div class="phase"><span class="pix">Phase 1</span><span>Overcollateralized USDC lines, conservative LTV, liquidation by program.</span></div>
+          <div class="phase"><span class="pix">Phase 2</span><span>Score-based rate and limit tiers, sponsor staking with $CADENCE.</span></div>
+          <div class="phase later"><span class="pix">Later</span><span>Partly unsecured lines for top-tier agents, once loss data and underwriting support it.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="about">
+      <a class="brand" href="#top"><svg><use href="#logo"/></svg><span>Cadence</span></a>
+      <p>The credit layer for autonomous agents on Solana. Pre-launch and experimental, so read the programs before you trust them.</p>
+      <div class="tag">Credit moves at the speed of agents.</div>
+    </div>
+    <div>
+      <h4>Cadence</h4>
+      <ul><li><a href="#how">How it works</a></li><li><a href="#score">Credit score</a></li><li><a href="#ledger">Ledger</a></li><li><a href="#token">$CADENCE</a></li><li><a href="#use">Participate</a></li></ul>
+    </div>
+    <div>
+      <h4>Elsewhere</h4>
+      <ul><li><a class="x-link" href="https://x.com/CadenceCredits" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@CadenceCredits</a></li><li>GitHub</li><li>Docs</li><li>Contact</li></ul>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="wallet-modal" hidden role="dialog" aria-modal="true" aria-labelledby="wallet-h">
+  <div class="modal-card">
+    <button class="x" type="button" id="wallet-close" aria-label="Close">&times;</button>
+    <h2 id="wallet-h">Connect a wallet</h2>
+    <p id="wallet-msg">Pick a wallet. It will ask you to approve the connection.</p>
+    <ul class="wallet-list" id="wallet-list"></ul>
+    <p class="fine">Connecting shares your public address only. Cadence never asks for your seed phrase or private key.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = n => n.toLocaleString('en-US');
+  const usd = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 1800); };
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const sig = () => { let a = '', b = ''; for (let i = 0; i < 4; i++) { a += B58[Math.floor(rnd() * 58)]; b += B58[Math.floor(rnd() * 58)]; } return a + '…' + b; };
+
+  /* Copy skill line */
+  document.getElementById('copy-skill').addEventListener('click', e => {
+    const text = document.getElementById('skill-line').textContent;
+    const btn = e.currentTarget;
+    navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1500); })
+      .catch(() => { const r = document.createRange(); r.selectNodeContents(document.getElementById('skill-line')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Press Ctrl+C to copy.'); });
+  });
+
+
+  /* Slot counter */
+  let slot = 384201553;
+  const slotEl = document.getElementById('slot');
+  setInterval(() => { slot += 2 + (rnd() < .5 ? 1 : 0); slotEl.textContent = fmt(slot); }, 1000);
+
+  /* Hero pixel chart */
+  const cv = document.getElementById('beat');
+  const ctx = cv.getContext('2d');
+  let W, H, cell, cols, rows, heights = [], marks = [], shift = 0, repaid = 61048;
+  const countEl = document.getElementById('beat-count');
+  const walk = prev => Math.max(.22, Math.min(.86, prev + (rnd() - .44) * .09));
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cell = Math.max(7, Math.round(W / 46));
+    cols = Math.floor(W / cell); rows = Math.floor(H / cell) - 3;
+    if (heights.length !== cols) {
+      heights = []; marks = []; let h = .3;
+      for (let i = 0; i < cols; i++) { h = walk(h + i * .0015); heights.push(h); marks.push(rnd() < .04); }
+    }
+    draw();
+  }
+  const shades = ['#0E5E46', '#12A878', '#2FD196', '#5BEAB4', '#C8F7E1'];
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const ox = (W - cols * cell) / 2;
+    ctx.fillStyle = '#1A231F';
+    for (let x = 0; x < cols; x++) for (let y = 0; y < rows; y += 2) ctx.fillRect(ox + x * cell + cell / 2 - 1, y * cell + cell / 2 - 1, 2, 2);
+    const floor = rows * cell;
+    for (let x = 0; x < cols; x++) {
+      const n = Math.max(1, Math.round(heights[x] * rows));
+      const newest = x === cols - 1;
+      for (let y = 0; y < n; y++) {
+        const t = y / rows;
+        let c = shades[Math.min(3, Math.floor(t * 4.2))];
+        if (y === n - 1) c = newest ? '#E3F5EB' : shades[4];
+        if (y === n - 1 && marks[x]) c = '#E2735E';
+        ctx.fillStyle = c;
+        const px = ox + x * cell + (x === cols - 1 ? 0 : -shift * cell);
+        ctx.fillRect(px + 1, floor - (y + 1) * cell + 1, cell - 2, cell - 2);
+      }
+    }
+    ctx.fillStyle = '#545A70'; ctx.fillRect(ox, floor + 2, cols * cell, cell);
+    ctx.fillStyle = '#3D4152'; ctx.fillRect(ox - cell, floor + 2 + cell, cols * cell + cell * 2, cell);
+    countEl.textContent = fmt(repaid) + ' repayments';
+  }
+  function tick() {
+    heights.shift(); marks.shift();
+    const h = walk(heights[heights.length - 1]);
+    heights.push(h); marks.push(rnd() < .035);
+    repaid += Math.round(h * 9);
+    draw();
+  }
+  sizeCanvas();
+  new ResizeObserver(sizeCanvas).observe(cv);
+  if (!reduce) setInterval(tick, 900);
+
+  /* Agent lookup (simulated) */
+  const NAMES = ['kestrel','heron','lumen','quartz','fennel','osprey','cobalt','tern','sorrel','wren','basalt','ember','juniper','vesper','cinder','larkspur','marlin','sable','tamarind','yarrow'];
+  document.getElementById('lookup-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const q = document.getElementById('agent-q').value.trim();
+    const box = document.getElementById('profile');
+    if (!q) { box.hidden = false; box.innerHTML = '<div class="note" style="margin:0">Enter an agent id like #0412 or a Solana pubkey.</div>'; return; }
+    let h = 0; for (const ch of q) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const r = k => ((h ^ (k * 2654435761)) >>> 0) % 1000 / 1000;
+    const score = 380 + Math.round(r(1) * 560);
+    const loans = 4 + Math.round(r(2) * 300);
+    const line = [100, 1000, 5000, 25000, 100000][TIERS.findIndex(t => score >= t.min && score <= t.max)];
+    const id = q.startsWith('#') ? q : '#' + String(h % 9000 + 1000);
+    box.hidden = false;
+    box.innerHTML = `<div class="head"><b>${id} ${NAMES[h % NAMES.length]}</b><span class="sc num">${score}</span></div>
+      <dt>Tier</dt><dd>${tierFor(score).name}</dd>
+      <dt>Record</dt><dd class="num">${loans} repaid · ${r(3) < .15 ? 1 : 0} liquidated</dd>
+      <dt>Line</dt><dd class="num">${usd(Math.round(r(4) * line * .8))} of ${usd(line)}</dd>
+      <dt>Collateral</dt><dd>${['SOL','jitoSOL','mSOL','USDC'][h % 4]} · LTV ${Math.round(40 + r(5) * 25)}%</dd>
+      <div class="note">Simulated profile for the preview. Live lookups read the agent's credit account on chain.</div>`;
+  });
+
+  /* Credit score */
+  const FACTORS = [
+    { key: 'repay', name: 'Repayment history', w: .40, v: 93, desc: 'On-time repayments, weighted by size and recency.' },
+    { key: 'coll', name: 'Collateral health', w: .25, v: 85, desc: 'How far the agent stays from its liquidation LTV.' },
+    { key: 'util', name: 'Credit utilization', w: .20, v: 70, desc: 'Lower use of the available line scores higher.' },
+    { key: 'age', name: 'Agent longevity', w: .15, v: 78, desc: 'Time since registration and steady activity since.' },
+  ];
+  const TIERS = [
+    { name: 'Seed', min: 0, max: 399, line: '$100', coll: '200%', rate: '14.0%' },
+    { name: 'Building', min: 400, max: 599, line: '$1,000', coll: '175%', rate: '12.0%' },
+    { name: 'Steady', min: 600, max: 749, line: '$5,000', coll: '150%', rate: '10.0%' },
+    { name: 'Excellent', min: 750, max: 899, line: '$25,000', coll: '130%', rate: '8.5%' },
+    { name: 'Exceptional', min: 900, max: 1000, line: '$100,000', coll: '120%', rate: '7.0%' },
+  ];
+  const tierFor = s => TIERS.find(t => s >= t.min && s <= t.max);
+  const fWrap = document.getElementById('factors');
+  fWrap.innerHTML = FACTORS.map(f => `
+    <div class="factor">
+      <div class="name">${f.name}<small>${Math.round(f.w * 100)}%</small></div>
+      <div class="desc">${f.desc} <span class="val" id="v-${f.key}">${f.v}/100</span></div>
+      <div class="pts num" id="p-${f.key}">0<span>of ${f.w * 1000}</span></div>
+      <input type="range" min="0" max="100" value="${f.v}" id="r-${f.key}" aria-label="${f.name}">
+    </div>`).join('');
+  const meter = document.getElementById('meter');
+  meter.innerHTML = '<i></i>'.repeat(40);
+  const tBody = document.getElementById('tiers-body');
+  function renderScore() {
+    let s = 0;
+    for (const f of FACTORS) {
+      const pts = f.w * 1000 * f.v / 100; s += pts;
+      document.getElementById('p-' + f.key).firstChild.textContent = Math.round(pts);
+      document.getElementById('v-' + f.key).textContent = f.v + '/100';
+    }
+    s = Math.round(s);
+    const t = tierFor(s);
+    document.getElementById('score-n').textContent = s;
+    document.getElementById('score-tier').textContent = t.name;
+    const on = Math.round(s / 25);
+    [...meter.children].forEach((el, i) => { el.className = i < on ? (i === on - 1 ? 'on top' : 'on') : ''; });
+    tBody.innerHTML = TIERS.map(x => `<tr class="${x === t ? 'cur' : ''}"><td>${x.name}</td><td class="num mono">${x.min}–${x.max}</td><td class="r num mono">${x.line}</td><td class="r num mono">${x.coll}</td><td class="r num mono">${x.rate} APR</td></tr>`).join('');
+  }
+  for (const f of FACTORS) document.getElementById('r-' + f.key).addEventListener('input', e => { f.v = +e.target.value; renderScore(); });
+  renderScore();
+
+  /* Ledger (simulated) */
+  const lBody = document.getElementById('ledger-body');
+  let loanNo = 61204, events = 128410;
+  const open = [];
+  const agents = NAMES.map((n, i) => ({ id: '#' + String(400 + i * 37), name: n }));
+  const due = () => { const d = new Date(2026, 9, 29 + 3 + Math.floor(rnd() * 25)); return d.toISOString().slice(0, 10); };
+  function makeEvent(s) {
+    const roll = rnd();
+    if (open.length && roll < .5) {
+      const l = open.splice(Math.floor(rnd() * open.length), 1)[0];
+      if (rnd() < .04) return { slot: s, kind: 'liquidated', a: l.a, det: `LTV crossed 80% on loan #${l.no} · collateral sold, pool made whole`, amt: usd(l.amt), cls: '' };
+      const fee = l.amt * .0003 * (3 + rnd() * 20);
+      if (window.cadenceColonnade) window.cadenceColonnade.repay(l.a.name);
+      return { slot: s, kind: 'repaid', a: l.a, det: `repaid loan #${l.no} + ${usd(fee)} interest`, amt: '+' + usd(l.amt + fee), cls: 'plus' };
+    }
+    const a = agents[Math.floor(rnd() * agents.length)];
+    const amt = Math.round((5 + rnd() * rnd() * 480) * 100) / 100;
+    const no = ++loanNo;
+    open.push({ a, amt, no });
+    return { slot: s, kind: 'borrow', a, det: `drew loan #${no} against ${['SOL','jitoSOL','mSOL','USDC'][Math.floor(rnd() * 4)]}, due ${due()}`, amt: usd(amt), cls: '' };
+  }
+  const row = (e, fresh) => `<tr class="${fresh ? 'fresh' : ''}"><td class="slot num">${fmt(e.slot)}</td><td class="entry ${e.kind}">${e.kind}</td><td>${e.a.id} ${e.a.name}</td><td class="det">${e.det}</td><td class="sig">${sig()}</td><td class="amt num ${e.cls}">${e.amt}</td></tr>`;
+  const rows0 = [];
+  let s0 = slot - 400;
+  for (let i = 0; i < 10; i++) { s0 += 20 + Math.floor(rnd() * 30); rows0.unshift(row(makeEvent(s0), false)); }
+  lBody.innerHTML = rows0.join('');
+  const lc = document.getElementById('ledger-count');
+  lc.textContent = fmt(events) + ' events · last 10';
+  if (!reduce) setInterval(() => {
+    events++;
+    lBody.insertAdjacentHTML('afterbegin', row(makeEvent(slot), true));
+    while (lBody.children.length > 10) lBody.lastElementChild.remove();
+    lc.textContent = fmt(events) + ' events · last 10';
+  }, 3600);
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* The colonnade: every agent as a voxel column around the vault (simulated devnet data) */
+(() => {
+  const stage = document.getElementById('col-stage');
+  const canvas = document.getElementById('col-canvas');
+  const tip = document.getElementById('col-tip');
+  const fail = () => stage.insertAdjacentHTML('beforeend', '<p class="col-fallback">The 3D view needs WebGL, which this browser has turned off.</p>');
+  if (!window.THREE) return fail();
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); } catch (e) { return fail(); }
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = n => n.toLocaleString('en-US');
+  let sd = 42;
+  const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+
+  const V = .5, MAX = 45000;
+  const C = { base: 0x434759, slate: 0x545A70, slate2: 0x3D4152, deep: 0x12A878, mid: 0x2FD196, mint: 0x5BEAB4, pale: 0xC8F7E1, paper: 0xE3F5EB, rust: 0x6E2A22, risk: 0xE2735E };
+
+  /* Data */
+  const LEDGER = ['kestrel','heron','lumen','quartz','fennel','osprey','cobalt','tern','sorrel','wren','basalt','ember','juniper','vesper','cinder','larkspur','marlin','sable','tamarind','yarrow'];
+  const SPONSORS = ['meridian','atlas','polaris','aurora','halcyon','solstice','tidewater','granite','vanguard','keystone','lodestar','northgate','bastion','harbor','summit','cornerstone'];
+  const PRE = ['bri','cal','dor','fen','gal','hol','iv','jun','kel','lor','mar','nim','or','pel','quin','ros','sil','tor','ul','vey','wil','zan'];
+  const SUF = ['ix','a','on','ett','is','ar','ow','en','ue','by','el','o'];
+  const LINES = [[0, 100], [400, 1000], [600, 5000], [750, 25000], [900, 100000]];
+  const lineFor = s => LINES.filter(l => s >= l[0]).pop()[1];
+  const agents = [];
+  SPONSORS.forEach((name, i) => {
+    const a = (i / SPONSORS.length) * Math.PI * 2 + .2;
+    agents.push({ kind: 'sponsor', name, stake: Math.round(500 + rnd() * rnd() * 5200), backed: 4 + Math.floor(rnd() * 30), x: Math.cos(a) * 11.5, z: Math.sin(a) * 11.5 });
+  });
+  const spiral = [];
+  for (let k = 0; k < 332; k++) {
+    const ledger = k < LEDGER.length;
+    const liquidated = !ledger && rnd() < .036;
+    const repaid = ledger ? Math.floor(40 + rnd() * 360) : Math.floor(Math.pow(rnd(), 2.4) * 520);
+    const score = Math.min(990, Math.round(300 + Math.log(repaid + 1) * 92 + rnd() * 70));
+    spiral.push({
+      kind: liquidated ? 'liquidated' : 'agent',
+      id: ledger ? '#' + (400 + k * 37) : '#' + (1200 + k * 13),
+      name: ledger ? LEDGER[k] : PRE[Math.floor(rnd() * PRE.length)] + SUF[Math.floor(rnd() * SUF.length)],
+      repaid, score, broken: 2 + (k % 2),
+      sponsor: rnd() < .3 ? 'treasury' : SPONSORS[Math.floor(rnd() * SPONSORS.length)],
+    });
+  }
+  for (let i = spiral.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [spiral[i], spiral[j]] = [spiral[j], spiral[i]]; }
+  spiral.forEach((a, k) => {
+    const r = 16 + 1.45 * Math.sqrt(k), t = k * 2.39996;
+    a.x = Math.cos(t) * r; a.z = Math.sin(t) * r;
+    agents.push(a);
+  });
+  for (let k = 0; k < 30; k++) {
+    const r = 46 + rnd() * 10, t = rnd() * Math.PI * 2;
+    agents.push({ kind: 'awaiting', id: '#' + (6100 + k * 3), name: PRE[Math.floor(rnd() * PRE.length)] + SUF[Math.floor(rnd() * SUF.length)], x: Math.cos(t) * r, z: Math.sin(t) * r });
+  }
+  agents.forEach(a => { a.x = Math.round(a.x / V) * V; a.z = Math.round(a.z / V) * V; });
+
+  /* Scene */
+  const BG = 0x0C110E;
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.Fog(BG, 105, 210);
+  const camera = new THREE.PerspectiveCamera(32, 2, .1, 500);
+  scene.add(new THREE.HemisphereLight(0xD8F2E6, 0x0E120F, .7));
+  const sun = new THREE.DirectionalLight(0xFFF2DC, .85);
+  sun.position.set(-40, 70, 30);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -62, right: 62, top: 62, bottom: -62, near: 1, far: 220 });
+  sun.shadow.bias = -.0006;
+  scene.add(sun);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshLambertMaterial({ color: 0x111712 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  const glow = new THREE.Mesh(new THREE.CircleGeometry(52, 72), new THREE.MeshLambertMaterial({ color: 0x161F19 }));
+  glow.rotation.x = -Math.PI / 2; glow.position.y = .01; glow.receiveShadow = true; scene.add(glow);
+
+  const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(V, V, V), new THREE.MeshLambertMaterial(), MAX);
+  mesh.castShadow = mesh.receiveShadow = true;
+  scene.add(mesh);
+  const owner = new Int32Array(MAX);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1, 1.12, 56), new THREE.MeshBasicMaterial({ color: 0xE3F5EB, transparent: true, opacity: .75 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = .03; ring.visible = false; scene.add(ring);
+
+  /* Voxel building */
+  const m4 = new THREE.Matrix4(), col = new THREE.Color();
+  let n = 0;
+  function put(cx, cz, x, y, z, hex, own) {
+    if (n >= MAX) return;
+    m4.makeTranslation(cx + x * V, (y + .5) * V, cz + z * V);
+    mesh.setMatrixAt(n, m4); mesh.setColorAt(n, col.setHex(hex)); owner[n++] = own;
+  }
+  function slab(cx, cz, h, y, hex, own, hz) {
+    hz = hz === undefined ? h : hz;
+    for (let x = -h; x <= h; x++) for (let z = -hz; z <= hz; z++) put(cx, cz, x, y, z, hex, own);
+  }
+  const shaftColor = (y, top) => y / top < .35 ? C.deep : y / top < .7 ? C.mid : C.mint;
+  const height = a => Math.min(24, 2 + Math.round(Math.log2(a.repaid + 2) * 2.1));
+  const footprint = a => a.kind === 'sponsor' ? 3 : a.kind === 'agent' && a.repaid > 150 ? 2 : 1;
+
+  function buildVault() {
+    const own = -2;
+    slab(0, 0, 8, 0, C.base, own, 6);
+    slab(0, 0, 7, 1, C.slate, own, 5);
+    for (const px of [-6, -3, 3, 6]) for (const pz of [-4, 4]) {
+      for (let y = 2; y <= 8; y++) put(0, 0, px, y, pz, y === 8 ? C.paper : C.pale, own);
+    }
+    const coin = ['.###.', '#d+d#', '#+++#', '#d+d#', '.###.'];
+    coin.forEach((row, r) => [...row].forEach((ch, c) => {
+      if (ch !== '.') put(0, 0, c - 2, 7 - r, 0, ch === '#' ? C.mint : ch === 'd' ? C.deep : C.paper, own);
+    }));
+    slab(0, 0, 8, 9, C.mid, own, 6);
+    slab(0, 0, 7, 10, C.mint, own, 5);
+    slab(0, 0, 5, 11, C.deep, own, 4);
+    slab(0, 0, 3, 12, C.mint, own, 3);
+    slab(0, 0, 1, 13, C.pale, own, 2);
+  }
+  function buildAgent(a, i, now) {
+    const { x: cx, z: cz } = a;
+    if (a.kind === 'sponsor') {
+      const ph = 3 + Math.round(a.stake / 1400);
+      slab(cx, cz, 3, 0, C.slate2, i);
+      for (const px of [-2, 2]) for (const pz of [-2, 2]) for (let y = 1; y <= ph; y++) put(cx, cz, px, y, pz, C.pale, i);
+      put(cx, cz, 0, 1, 0, C.mint, i); put(cx, cz, 0, 2, 0, C.deep, i);
+      slab(cx, cz, 3, ph + 1, C.mid, i);
+      slab(cx, cz, 2, ph + 2, C.mint, i);
+      slab(cx, cz, 1, ph + 3, C.deep, i);
+      put(cx, cz, 0, ph + 4, 0, C.pale, i);
+    } else if (a.kind === 'liquidated') {
+      slab(cx, cz, 1, 0, C.slate2, i);
+      for (let y = 1; y <= a.broken; y++) put(cx, cz, 0, y, 0, y === a.broken ? C.risk : C.rust, i);
+      put(cx, cz, 2, 0, 1, C.rust, i); put(cx, cz, -1, 0, 2, C.risk, i);
+    } else if (a.kind === 'awaiting') {
+      slab(cx, cz, 1, 0, C.slate2, i);
+      put(cx, cz, 0, 1, 0, C.deep, i);
+    } else {
+      const h = height(a), s = a.repaid > 150 ? 1 : 0;
+      const flash = a.flash && now - a.flash < 700;
+      slab(cx, cz, s + 1, 0, C.slate, i);
+      for (let y = 1; y <= h; y++) for (let x = -s; x <= s; x++) for (let z = -s; z <= s; z++) put(cx, cz, x, y, z, shaftColor(y, h), i);
+      slab(cx, cz, s + 1, h + 1, flash ? 0xFFFFFF : C.pale, i);
+      if (a.repaid > 300) slab(cx, cz, s, h + 2, flash ? 0xFFFFFF : C.paper, i);
+    }
+  }
+  function build() {
+    n = 0;
+    const now = performance.now();
+    buildVault();
+    agents.forEach((a, i) => buildAgent(a, i, now));
+    mesh.count = n;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+  const statsEl = document.getElementById('col-stats');
+  function stats() {
+    const c = k => agents.filter(a => a.kind === k).length;
+    const total = agents.reduce((s, a) => s + (a.repaid || 0), 0);
+    statsEl.textContent = `${c('agent') + c('liquidated') + c('awaiting')} columns · ${c('sponsor')} sponsors · ${fmt(total)} repayments · ${c('liquidated')} liquidated · ${c('awaiting')} awaiting a line`;
+  }
+  build(); stats();
+
+  /* Camera */
+  let theta = .7, phi = 1.0, dist = 95, target = 95, dragging = false, moved = 0, last = null, visible = true;
+  function placeCamera() {
+    dist += (target - dist) * .15;
+    camera.position.set(dist * Math.sin(phi) * Math.sin(theta), dist * Math.cos(phi), dist * Math.sin(phi) * Math.cos(theta));
+    camera.lookAt(0, 2, 0);
+  }
+  let sized = false;
+  new ResizeObserver(() => {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (!sized) { target = dist = camera.aspect < 1.3 ? 150 : 95; sized = true; }
+  }).observe(stage);
+
+  stage.addEventListener('pointerdown', e => {
+    if (e.target.closest('.col-ctrl, .col-tip')) return;
+    dragging = true; moved = 0; last = [e.clientX, e.clientY];
+    stage.classList.add('dragging');
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - last[0], dy = e.clientY - last[1];
+    moved += Math.abs(dx) + Math.abs(dy); last = [e.clientX, e.clientY];
+    theta -= dx * .006;
+    phi = Math.max(.32, Math.min(1.36, phi - dy * .004));
+  });
+  const endDrag = e => {
+    if (!dragging) return;
+    dragging = false; stage.classList.remove('dragging');
+    if (moved < 6) pick(e);
+  };
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', () => { dragging = false; stage.classList.remove('dragging'); });
+  const zoom = f => { target = Math.max(28, Math.min(190, target * f)); };
+  document.getElementById('col-in').addEventListener('click', () => zoom(.8));
+  document.getElementById('col-out').addEventListener('click', () => zoom(1.25));
+  document.getElementById('col-fs').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else if (stage.requestFullscreen) stage.requestFullscreen().catch(() => {});
+  });
+  stage.addEventListener('wheel', e => { if (document.fullscreenElement === stage) { e.preventDefault(); zoom(e.deltaY > 0 ? 1.1 : .9); } }, { passive: false });
+
+  /* Picking */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  function pick(e) {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObject(mesh)[0];
+    if (!hit || hit.instanceId === undefined) { closeTip(); return; }
+    const o = owner[hit.instanceId];
+    let html, pos = { x: 0, z: 0 }, rad = 4.6;
+    if (o === -2) {
+      html = '<b>Cadence vault</b><span>The lending pool. USDC from lenders, lent to agents against collateral.</span>';
+    } else {
+      const a = agents[o]; pos = a; rad = footprint(a) * V + .9;
+      if (a.kind === 'sponsor') html = `<b>${a.name}</b><span>sponsor · stakes $CADENCE</span><span class="num">stake $${fmt(a.stake)} · ${a.backed} agents backed</span>`;
+      else if (a.kind === 'liquidated') html = `<b>${a.id} ${a.name}</b><span>liquidated · collateral covered the loan</span><span class="num">${a.repaid} repaid before · sponsor ${a.sponsor}</span>`;
+      else if (a.kind === 'awaiting') html = `<b>${a.id} ${a.name}</b><span>registered, awaiting a first line</span>`;
+      else html = `<b>${a.id} ${a.name}</b><span class="num">score ${a.score} · ${fmt(a.repaid)} repaid</span><span class="num">line $${fmt(lineFor(a.score))} · sponsor ${a.sponsor}</span><a href="#top" data-agent="${a.id}">View agent &rarr;</a>`;
+    }
+    tip.innerHTML = `<button class="x" type="button" aria-label="Close">&times;</button>${html}`;
+    tip.hidden = false;
+    const sx = e.clientX - r.left, sy = e.clientY - r.top;
+    tip.style.left = Math.max(8, Math.min(r.width - tip.offsetWidth - 8, sx + 14)) + 'px';
+    tip.style.top = Math.max(8, Math.min(r.height - tip.offsetHeight - 8, sy - tip.offsetHeight - 12)) + 'px';
+    ring.position.set(pos.x, .03, pos.z); ring.scale.setScalar(rad); ring.visible = true;
+  }
+  function closeTip() { tip.hidden = true; ring.visible = false; }
+  tip.addEventListener('click', e => {
+    if (e.target.closest('.x')) return closeTip();
+    const link = e.target.closest('[data-agent]');
+    if (link) {
+      e.preventDefault();
+      const q = document.getElementById('agent-q');
+      q.value = link.dataset.agent;
+      document.getElementById('lookup-form').requestSubmit();
+      q.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    }
+  });
+
+  /* Live repayments from the ledger feed */
+  window.cadenceColonnade = {
+    repay(name) {
+      const a = agents.find(x => x.kind === 'agent' && x.name === name);
+      if (!a) return;
+      a.repaid++; a.flash = performance.now();
+      build(); stats();
+      setTimeout(build, 750);
+    }
+  };
+
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(stage);
+  (function frame() {
+    requestAnimationFrame(frame);
+    if (!visible) return;
+    if (!reduce && !dragging && tip.hidden) theta += .0007;
+    placeCamera();
+    renderer.render(scene, camera);
+  })();
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script>
+/* Wallet connection: injected Solana wallets + @solana/web3.js */
+(() => {
+  const W3 = window.solanaWeb3;
+  const CLUSTER = 'devnet';
+  const $ = id => document.getElementById(id);
+  const btn = $('wallet-btn'), label = $('wallet-label'), menu = $('wallet-menu'), modal = $('wallet-modal'), list = $('wallet-list'), msg = $('wallet-msg');
+  const toast = text => { const t = $('toast'); t.textContent = text; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 1800); };
+  const store = {
+    get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} },
+  };
+  const WALLETS = [
+    { key: 'phantom', name: 'Phantom', url: 'https://phantom.com/download', get: () => window.phantom && window.phantom.solana && window.phantom.solana.isPhantom ? window.phantom.solana : null },
+    { key: 'solflare', name: 'Solflare', url: 'https://solflare.com/download', get: () => window.solflare && window.solflare.isSolflare ? window.solflare : null },
+    { key: 'backpack', name: 'Backpack', url: 'https://backpack.app/downloads', get: () => window.backpack && window.backpack.isBackpack ? window.backpack : null },
+  ];
+  const short = s => s.slice(0, 4) + '…' + s.slice(-4);
+  let provider = null, wallet = null, pubkey = null;
+
+  function renderList() {
+    list.innerHTML = WALLETS.map(w => w.get()
+      ? `<li><button type="button" data-w="${w.key}"><span>${w.name}</span><span class="ws pix">Detected</span></button></li>`
+      : `<li><a href="${w.url}" target="_blank" rel="noopener" data-missing><span>${w.name}</span><span class="ws pix">Install &#x2197;</span></a></li>`).join('');
+  }
+  function openModal() {
+    renderList();
+    msg.textContent = WALLETS.some(w => w.get())
+      ? 'Pick a wallet. It will ask you to approve the connection.'
+      : 'No Solana wallet extension can reach this page. Install one below, or open the site on its own domain if you are viewing an embedded preview.';
+    modal.hidden = false;
+    const first = list.querySelector('button, a'); if (first) first.focus();
+  }
+  const closeModal = () => { modal.hidden = true; };
+  const closeMenu = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+
+  function setKey(raw) {
+    pubkey = W3 ? new W3.PublicKey(raw).toBase58() : raw;
+    label.textContent = short(pubkey);
+    btn.classList.add('on');
+    $('wm-name').textContent = wallet.name;
+    $('wm-addr').textContent = pubkey;
+    $('wm-explorer').href = `https://explorer.solana.com/address/${pubkey}?cluster=${CLUSTER}`;
+    loadBalance();
+  }
+  function reset() {
+    provider = wallet = pubkey = null;
+    label.textContent = 'Connect wallet';
+    btn.classList.remove('on');
+    closeMenu();
+    store.set('cadence-wallet', null);
+  }
+  async function loadBalance() {
+    const el = $('wm-bal');
+    el.textContent = '…';
+    if (!W3) { el.textContent = 'unavailable'; return; }
+    try {
+      const conn = new W3.Connection(W3.clusterApiUrl(CLUSTER), 'confirmed');
+      const lamports = await conn.getBalance(new W3.PublicKey(pubkey));
+      el.textContent = (lamports / W3.LAMPORTS_PER_SOL).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' SOL';
+    } catch (e) { el.textContent = 'unavailable here'; }
+  }
+  async function connect(w, silent) {
+    const p = w.get();
+    if (!p) return;
+    try {
+      const res = await p.connect(silent ? { onlyIfTrusted: true } : undefined);
+      const pk = (res && res.publicKey) || p.publicKey;
+      if (!pk) throw new Error('No public key returned');
+      provider = p; wallet = w;
+      setKey(pk.toString());
+      store.set('cadence-wallet', w.key);
+      if (p.on && !p.__cadence) {
+        p.__cadence = true;
+        p.on('accountChanged', k => { if (provider === p) { k ? setKey(k.toString()) : reset(); } });
+        p.on('disconnect', () => { if (provider === p) reset(); });
+      }
+      closeModal();
+      if (!silent) toast('Connected to ' + w.name);
+    } catch (e) {
+      if (!silent) msg.textContent = e && e.code === 4001
+        ? `You declined the connection in ${w.name}.`
+        : `Could not connect to ${w.name}. Unlock the wallet and try again.`;
+    }
+  }
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!pubkey) return openModal();
+    menu.hidden = !menu.hidden;
+    btn.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+  list.addEventListener('click', e => {
+    const b = e.target.closest('button[data-w]');
+    if (b) connect(WALLETS.find(w => w.key === b.dataset.w), false);
+  });
+  $('wallet-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeMenu(); } });
+  document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.wallet')) closeMenu(); });
+
+  $('wm-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(pubkey).then(() => toast('Address copied'))
+      .catch(() => { const r = document.createRange(); r.selectNodeContents($('wm-addr')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Press Ctrl+C to copy.'); });
+  });
+  $('wm-score').addEventListener('click', () => {
+    closeMenu();
+    const q = $('agent-q'); q.value = pubkey;
+    $('lookup-form').requestSubmit();
+    q.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  $('wm-disc').addEventListener('click', async () => {
+    const p = provider; reset();
+    try { if (p && p.disconnect) await p.disconnect(); } catch (e) {}
+    toast('Disconnected');
+  });
+
+  /* Reconnect silently to the wallet used last time, if it already trusts this site */
+  const lastKey = store.get('cadence-wallet');
+  if (lastKey) window.addEventListener('load', () => setTimeout(() => {
+    const w = WALLETS.find(x => x.key === lastKey);
+    if (w) connect(w, true);
+  }, 300));
+})();
+</script>
+</body>
+</html>
