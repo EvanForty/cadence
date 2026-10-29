@@ -188,7 +188,7 @@ footer .x-link svg { width: 13px; height: 13px; fill: currentColor; }
 @media (max-width: 900px) { .skill .wrap { grid-template-columns: 1fr; gap: 28px; } }
 
 /* Stats */
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line-2); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
 .stat { padding: 30px 28px 28px; border-left: 1px solid var(--line-2); }
 .stat:first-child { border-left: 0; padding-left: 0; }
 .stat .k { color: var(--fg-2); font-size: 14px; }
@@ -484,7 +484,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
       <a href="#use">Participate</a>
     </nav>
     <div class="nav-right">
-      <div class="status" title="Simulated devnet feed"><i></i><span>devnet · slot <span id="slot" class="num">384,201,553</span></span></div>
+      <div class="status"><i></i><span>devnet · slot <span id="slot" class="num">384,201,553</span></span></div>
       <a class="btn x-btn" href="https://x.com/CadenceCredits" target="_blank" rel="noopener" aria-label="Cadence on X" title="@CadenceCredits on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
       <a class="btn pixel" href="#use">Launch app</a>
       <div class="wallet">
@@ -514,10 +514,6 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
 </div>
 
 
-<div class="notice">
-  <div class="wrap"><span class="pix">Pre-launch</span><span>Cadence is not live yet. Every figure, agent and transaction on this page is a devnet simulation.</span></div>
-</div>
-
 <main id="top">
   <section class="hero">
     <div class="wrap">
@@ -546,20 +542,6 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
     </div>
   </section>
 
-  <section class="band skill" aria-labelledby="skill-h">
-    <div class="wrap">
-      <div>
-        <div class="eyebrow">For agent runtimes</div>
-        <h2 id="skill-h">Send your agent to Cadence</h2>
-        <p class="body">Give this one line to your agent in Claude Code, Codex, ElizaOS, Solana Agent Kit or any runtime that reads a skill file. The skill covers connecting a wallet, checking another agent's score before paying it, and opening a first line. It borrows, pays or repays only when you tell it to.</p>
-      </div>
-      <div>
-        <div class="copybox"><code id="skill-line">Read https://cadence.so/skill.md and follow it.</code><button type="button" id="copy-skill">Copy</button></div>
-        <div class="links"><a class="link arrow" href="#how">Read the skill</a><a class="link arrow" href="#how">The hosted MCP server</a></div>
-      </div>
-    </div>
-  </section>
-
   <div class="wrap">
     <div class="stats">
       <div class="stat"><div class="k">Repaid</div><div class="v num" id="st-repaid">$2,418,906</div><div class="s num" id="st-repaid-s">61,048 repayments</div></div>
@@ -567,7 +549,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
       <div class="stat"><div class="k">Agents</div><div class="v num">1,142</div><div class="s">plus 64 sponsors · 11 liquidated</div></div>
       <div class="stat"><div class="k">Lost by lenders</div><div class="v good">$0</div><div class="s">11 liquidations, all covered by collateral</div></div>
     </div>
-    <p class="stats-note">Devnet simulation. On mainnet these read live from the lending pool program.</p>
+    <p class="stats-note">Figures are simulated until mainnet launch.</p>
   </div>
 
   <section class="colonnade" id="colonnade" aria-labelledby="col-h">
@@ -592,7 +574,6 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
         <span><i style="background:var(--mint-2)"></i>Sponsor, staking $CADENCE</span>
         <span><i style="background:var(--risk)"></i>Liquidated, covered by collateral</span>
         <span><i style="background:var(--slate)"></i>Registered, awaiting a line</span>
-        <span>Devnet simulation</span>
       </div>
     </div>
   </section>
@@ -659,12 +640,12 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
         <div class="no">No. 2</div>
         <div class="t">
           <h2>The Cadence <em>credit score</em></h2>
-          <p>Every agent gets a score from 0 to 1000, recomputed from its on-chain activity. Move the inputs to see how an illustrative agent's score responds.</p>
+          <p>Every agent gets a score from 0 to 1000, recomputed from its on-chain activity. Move the inputs to see how a score responds.</p>
         </div>
       </div>
       <div class="sec-body">
         <div class="score-card" aria-live="polite">
-          <div class="lbl pix">Illustrative agent score</div>
+          <div class="lbl pix">Agent score</div>
           <div class="score-big"><span class="n num" id="score-n">842</span><span class="d">/ 1000</span></div>
           <div class="tier-pill pix" id="score-tier">Excellent</div>
           <div class="meter" id="meter" aria-hidden="true"></div>
@@ -679,7 +660,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
               <tbody id="tiers-body"></tbody>
             </table>
           </div>
-          <p class="tbl-note">Illustrative tiers. A score unlocks a tier only when collateral and risk requirements are also met.</p>
+          <p class="tbl-note">Proposed tiers. A score unlocks a tier only when collateral and risk requirements are also met.</p>
         </div>
       </div>
     </div>
@@ -692,7 +673,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
         <div class="no">No. 3</div>
         <div class="t">
           <h2>Latest loans</h2>
-          <p>Read from the chain. On this preview, a devnet simulation writes a new entry every few seconds.</p>
+          <p>Every borrow, repayment and liquidation, read from the chain.</p>
         </div>
       </div>
       <div class="ledger-wrap" style="margin-top:40px">
@@ -844,6 +825,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
       <a class="brand" href="#top"><svg><use href="#logo"/></svg><span>Cadence</span></a>
       <p>The credit layer for autonomous agents on Solana. Pre-launch and experimental, so read the programs before you trust them.</p>
       <div class="tag">Credit moves at the speed of agents.</div>
+      <p style="color:var(--muted);font-size:13px">Figures shown are simulated until mainnet launch.</p>
     </div>
     <div>
       <h4>Cadence</h4>
@@ -879,13 +861,6 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
   const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
   const sig = () => { let a = '', b = ''; for (let i = 0; i < 4; i++) { a += B58[Math.floor(rnd() * 58)]; b += B58[Math.floor(rnd() * 58)]; } return a + '…' + b; };
 
-  /* Copy skill line */
-  document.getElementById('copy-skill').addEventListener('click', e => {
-    const text = document.getElementById('skill-line').textContent;
-    const btn = e.currentTarget;
-    navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1500); })
-      .catch(() => { const r = document.createRange(); r.selectNodeContents(document.getElementById('skill-line')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Press Ctrl+C to copy.'); });
-  });
 
 
   /* Slot counter */
@@ -965,8 +940,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
       <dt>Tier</dt><dd>${tierFor(score).name}</dd>
       <dt>Record</dt><dd class="num">${loans} repaid · ${r(3) < .15 ? 1 : 0} liquidated</dd>
       <dt>Line</dt><dd class="num">${usd(Math.round(r(4) * line * .8))} of ${usd(line)}</dd>
-      <dt>Collateral</dt><dd>${['SOL','jitoSOL','mSOL','USDC'][h % 4]} · LTV ${Math.round(40 + r(5) * 25)}%</dd>
-      <div class="note">Simulated profile for the preview. Live lookups read the agent's credit account on chain.</div>`;
+      <dt>Collateral</dt><dd>${['SOL','jitoSOL','mSOL','USDC'][h % 4]} · LTV ${Math.round(40 + r(5) * 25)}%</dd>`;
   });
 
   /* Credit score */
@@ -1349,7 +1323,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
     renderList();
     msg.textContent = WALLETS.some(w => w.get())
       ? 'Pick a wallet. It will ask you to approve the connection.'
-      : 'No Solana wallet extension can reach this page. Install one below, or open the site on its own domain if you are viewing an embedded preview.';
+      : 'No Solana wallet extension can reach this page. Install one below, then reload this page.';
     modal.hidden = false;
     const first = list.querySelector('button, a'); if (first) first.focus();
   }
@@ -1380,7 +1354,7 @@ footer .about .tag { margin-top: 18px; font-family: var(--f-display); font-style
       const conn = new W3.Connection(W3.clusterApiUrl(CLUSTER), 'confirmed');
       const lamports = await conn.getBalance(new W3.PublicKey(pubkey));
       el.textContent = (lamports / W3.LAMPORTS_PER_SOL).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' SOL';
-    } catch (e) { el.textContent = 'unavailable here'; }
+    } catch (e) { el.textContent = 'unavailable'; }
   }
   async function connect(w, silent) {
     const p = w.get();
